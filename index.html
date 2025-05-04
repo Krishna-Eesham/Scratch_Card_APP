@@ -129,9 +129,6 @@
                 },
                 body: JSON.stringify(payload)
             };
-
-            fetch("https://scratch-card-app-dxpj.onrender.com", options)
-
                 .then(response => response.json())
                 .then(data => {
                     alert('Registration successful!');
