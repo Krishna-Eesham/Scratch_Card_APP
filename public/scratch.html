@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scratch Card Prize</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      padding-top: 50px;
+    }
+    .card {
+      position: relative;
+      width: 300px;
+      height: 200px;
+      margin: 0 auto;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      background: #fff;
+      overflow: hidden;
+    }
+    #prize-text {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 2;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Scratch to Reveal Your Prize</h2>
+  <div class="card">
+    <div id="prize-text">Loading...</div>
+    <canvas id="scratchCanvas" width="300" height="200"></canvas>
+  </div>
+
+  <script>
+    const memberId = new URLSearchParams(window.location.search).get('id');
+    if (!memberId) {
+      alert('Member ID not found in URL.');
+      throw new Error('Missing memberId');
+    }
+
+    fetch(`http://localhost:3000/member/${memberId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.eligible || !data.prize) {
+          document.getElementById('prize-text').innerText = 'Not Eligible Yet';
+          return;
+        }
+
+        document.getElementById('prize-text').innerText = data.prize;
+
+        const canvas = document.getElementById('scratchCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Fill canvas with silver background and "Scratch & Win" text
+        ctx.fillStyle = "#C0C0C0"; // Silver color
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "#333";
+        ctx.font = "bold 22px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("Scratch & Win", canvas.width / 2, canvas.height / 2);
+
+        let isDrawing = false;
+
+        canvas.addEventListener('mousedown', () => isDrawing = true);
+        canvas.addEventListener('mouseup', () => isDrawing = false);
+        canvas.addEventListener('mousemove', scratch);
+        canvas.addEventListener('touchstart', () => isDrawing = true);
+        canvas.addEventListener('touchend', () => isDrawing = false);
+        canvas.addEventListener('touchmove', scratch);
+
+        function scratch(e) {
+          if (!isDrawing) return;
+
+          const rect = canvas.getBoundingClientRect();
+          const x = (e.clientX || e.touches[0].clientX) - rect.left;
+          const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.beginPath();
+          ctx.arc(x, y, 20, 0, Math.PI * 2, false);
+          ctx.fill();
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        document.getElementById('prize-text').innerText = 'Error loading data.';
+      });
+  </script>
+</body>
+</html>

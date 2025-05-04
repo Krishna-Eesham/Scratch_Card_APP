@@ -1,137 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Scratch Card</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Registration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .form-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            font-size: 14px;
+            color: #555;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .radio-group {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
 </head>
 <body>
 
-  <h1>🎉 Your Scratch Card 🎉</h1>
+    <div class="form-container">
+        <h2>Member Registration</h2>
+        <form id="registrationForm">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
 
-  <div id="scratch-card">
-    <div id="scratch-content">Loading Prize...</div>
-    <canvas id="scratch-canvas"></canvas>
-  </div>
+            <label for="mobile">Mobile Number:</label>
+            <input type="text" id="mobile" name="mobile" required>
 
-  <script>
-  const urlParams = new URLSearchParams(window.location.search);
-  const userId = urlParams.get('id');
-  const prize = urlParams.get('prize');
+            <label for="area">Area:</label>
+            <input type="text" id="area" name="area" required>
 
-  const scratchContent = document.getElementById('scratch-content');
-  scratchContent.innerText = prize || 'No Prize';
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" name="startDate" required>
 
-  const canvas = document.getElementById('scratch-canvas');
-  const ctx = canvas.getContext('2d');
+            <label for="schemeNumber">Scheme Number:</label>
+            <select id="schemeNumber" name="schemeNumber" required>
+                <option value="1">Scheme 1</option>
+                <option value="2">Scheme 2</option>
+                <option value="3">Scheme 3</option>
+            </select>
 
-  let isDrawing = false;
-  let isScratched = false;
+            <label>Scratch Card Days:</label>
+            <div class="radio-group">
+                <div>
+                    <input type="radio" id="30days" name="scratchCardDays" value="30" required>
+                    <label for="30days">30 Days</label>
+                </div>
+                <div>
+                    <input type="radio" id="60days" name="scratchCardDays" value="60">
+                    <label for="60days">60 Days</label>
+                </div>
+                <div>
+                    <input type="radio" id="90days" name="scratchCardDays" value="90">
+                    <label for="90days">90 Days</label>
+                </div>
+            </div>
 
-  const scratchSound = new Audio('scratch.mp3');
-  scratchSound.loop = true;
+            <button type="submit">Register</button>
+        </form>
+    </div>
 
-  function startSound() {
-    scratchSound.play().catch(() => {});
-  }
+    <script>
+        document.getElementById('registrationForm').addEventListener('submit', function (e) {
+            e.preventDefault();
 
-  function stopSound() {
-    scratchSound.pause();
-    scratchSound.currentTime = 0;
-  }
+            const name = document.getElementById('name').value;
+            const mobile = document.getElementById('mobile').value;
+            const area = document.getElementById('area').value;
+            const startDate = document.getElementById('startDate').value;
+            const schemeNumber = parseInt(document.getElementById('schemeNumber').value);
+            const scratchCardDays = parseInt(document.querySelector('input[name="scratchCardDays"]:checked').value);
 
-  function resizeCanvas() {
-  const rect = scratchContent.getBoundingClientRect();
-  canvas.width = rect.width;
-  canvas.height = rect.height;
+            // Generate unique Member ID
+            const memberId = Math.floor(100000 + Math.random() * 900000).toString();
 
-  canvas.style.width = rect.width + 'px';
-  canvas.style.height = rect.height + 'px';
+            const payload = {
+                schemeNumber: schemeNumber,
+                scratchCardDays: scratchCardDays,
+                name: name,
+                mobile: mobile,
+                area: area,
+                startDate: startDate,
+                memberId: memberId,
+                isScratched: false,
+                prize: ""
+            };
 
-  ctx.fillStyle = 'gray';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const options = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            };
 
-  ctx.globalCompositeOperation = 'destination-out';
-}
+            fetch("http://localhost:3000/register", options)
 
-  
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
+                .then(response => response.json())
+                .then(data => {
+                    alert('Registration successful!');
+                    document.getElementById('registrationForm').reset();
+                })
+                .catch(error => {
+                  alert(data.message || 'Registration successful!');
+                  console.error(error);
+                });
+        });
+    </script>
 
-  function scratch(x, y) {
-    if (isScratched) return;
-    ctx.beginPath();
-    ctx.arc(x, y, 20, 0, Math.PI * 2);
-    ctx.fill();
-    checkScratchPercentage();
-  }
-
-  function checkScratchPercentage() {
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let clearedPixels = 0;
-    for (let i = 0; i < imageData.data.length; i += 4) {
-      if (imageData.data[i + 3] === 0) {
-        clearedPixels++;
-      }
-    }
-    const totalPixels = canvas.width * canvas.height;
-    const clearedPercent = (clearedPixels / totalPixels) * 100;
-    if (clearedPercent > 60) {
-      revealPrize();
-    }
-  }
-
-  function revealPrize() {
-    isScratched = true;
-    canvas.style.pointerEvents = 'none';
-    fireConfetti();
-    alert('🎉 Congratulations! You revealed your prize!');
-    stopSound();
-  }
-
-  function fireConfetti() {
-    confetti({
-      particleCount: 150,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-  }
-
-  // Mouse
-  canvas.addEventListener('mousedown', (e) => {
-    isDrawing = true;
-    startSound();
-    scratch(e.offsetX, e.offsetY);
-  });
-  canvas.addEventListener('mousemove', (e) => {
-    if (isDrawing) scratch(e.offsetX, e.offsetY);
-  });
-  canvas.addEventListener('mouseup', () => {
-    isDrawing = false;
-    stopSound();
-  });
-
-  // Touch
-  canvas.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    isDrawing = true;
-    startSound();
-    const rect = canvas.getBoundingClientRect();
-    const x = e.touches[0].clientX - rect.left;
-    const y = e.touches[0].clientY - rect.top;
-    scratch(x, y);
-  });
-  canvas.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    if (!isDrawing) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.touches[0].clientX - rect.left;
-    const y = e.touches[0].clientY - rect.top;
-    scratch(x, y);
-  });
-  canvas.addEventListener('touchend', () => {
-    isDrawing = false;
-    stopSound();
-  });
-</script>
+</body>
+</html>

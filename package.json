@@ -1,16 +1,13 @@
 {
-  "name": "usr",
+  "name": "scratch-card-application",
   "version": "1.0.0",
+  "description": "Scratch card system with random prizes",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "assign-prizes": "node assignPrizes.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-    "express": "^5.1.0"
+    "express": "^4.21.2"
   }
 }

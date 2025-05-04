@@ -1,47 +1,28 @@
-/* style.css */
-
 body {
   font-family: Arial, sans-serif;
-  background: #eee;
+  background-color: #f0f0f0;
   text-align: center;
+  margin: 0;
   padding: 20px;
 }
 
-h1 {
-  font-size: 2rem;
-  margin-bottom: 30px;
-}
-
-#scratch-card {
-  position: relative;
-  width: 320px;
-  height: 180px;
+.scratch-container {
   margin: 0 auto;
-  background: white;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  border-radius: 12px;
-  overflow: hidden;
+  max-width: 400px;
 }
 
-#scratch-content {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(45deg, gold, orange);
-  color: #000;
-  font-size: 24px;
-  font-weight: bold;
-  line-height: 180px;
-  text-align: center;
-  z-index: 1;
-  border-radius: 12px;
+canvas {
+  border: 2px solid #ccc;
+  margin-top: 20px;
+  cursor: pointer;
 }
 
-#scratch-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 2;
-  border-radius: 12px;
-  /* REMOVE width: 100% and height: 100% here */
+#prizeMessage {
+  margin-top: 20px;
+  font-size: 1.2em;
+  color: #333;
+}
+
+.hidden {
+  display: none;
 }
